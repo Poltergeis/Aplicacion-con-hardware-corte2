@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.compose.ui.text.google.fonts)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.converter.gson)
 
     // Room
     implementation(libs.androidx.room.runtime)

@@ -1,6 +1,8 @@
 package com.softcode.mymagicapp.core.hardware.domain
 
-//esta interfaz es de ejemplo, debes definir dos managers de hardware como interfaces,
-//de las implementaciones puedo encargarme yo
+import android.content.Context
+import android.net.Uri
+
 interface CameraManager {
+    suspend fun takePicture(context: Context): Uri?
 }
