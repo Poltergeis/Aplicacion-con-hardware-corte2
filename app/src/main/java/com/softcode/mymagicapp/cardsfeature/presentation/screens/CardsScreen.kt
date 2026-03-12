@@ -1,5 +1,6 @@
 package com.softcode.mymagicapp.cardsfeature.presentation.screens
 
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
@@ -28,6 +30,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -40,13 +43,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil3.compose.AsyncImage
 import com.softcode.mymagicapp.cardsfeature.presentation.ui.CardsEffect
 import com.softcode.mymagicapp.cardsfeature.presentation.viewmodel.CardsViewModel
-import com.softcode.mymagicapp.core.data.local.entity.CardEntity
+import com.softcode.mymagicapp.core.domain.entities.CardEntity
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -116,6 +122,7 @@ fun CardsScreen(
                     CircularProgressIndicator()
                 }
             }
+
             state.cards.isEmpty() -> {
                 Box(
                     modifier = Modifier
@@ -130,6 +137,7 @@ fun CardsScreen(
                     )
                 }
             }
+
             else -> {
                 LazyColumn(
                     modifier = Modifier
@@ -157,8 +165,15 @@ fun CardsScreen(
             cardDescription = state.dialogDescription,
             onTitleChanged = viewModel::onDialogTitleChanged,
             onDescriptionChanged = viewModel::onDialogDescriptionChanged,
-            onConfirm = if (state.showAddDialog) viewModel::onConfirmAdd else viewModel::onConfirmEdit,
-            onDismiss = viewModel::onDismissDialog
+            onConfirm = if (state.showAddDialog) {
+                { viewModel.onConfirmAdd(context) }
+            } else {
+                viewModel::onConfirmEdit
+            },
+            onDismiss = viewModel::onDismissDialog,
+            showCameraOption = state.showAddDialog,
+            pendingImageUri = state.pendingImageUri,
+            onTakePicture = { viewModel.onTakePicture(context) }
         )
     }
 }
@@ -180,6 +195,19 @@ private fun CardItem(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
+            if (card.imageUrl.isNotBlank()) {
+                AsyncImage(
+                    model = card.imageUrl,
+                    contentDescription = card.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(MaterialTheme.shapes.medium)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -240,7 +268,10 @@ private fun CardDialog(
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    showCameraOption: Boolean = false,
+    pendingImageUri: Uri? = null,
+    onTakePicture: () -> Unit = {}
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -263,17 +294,36 @@ private fun CardDialog(
                     maxLines = 5,
                     modifier = Modifier.fillMaxWidth()
                 )
+                if (showCameraOption) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    if (pendingImageUri != null) {
+                        AsyncImage(
+                            model = pendingImageUri,
+                            contentDescription = "Foto seleccionada",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(160.dp)
+                                .clip(MaterialTheme.shapes.medium)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    OutlinedButton(
+                        onClick = onTakePicture,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Camera, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(if (pendingImageUri != null) "Retomar foto" else "Tomar foto")
+                    }
+                }
             }
         },
         confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text("Guardar")
-            }
+            TextButton(onClick = onConfirm) { Text("Guardar") }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancelar")
-            }
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
         }
     )
 }

@@ -1,0 +1,1 @@
+package com.softcode.mymagicapp.core.network

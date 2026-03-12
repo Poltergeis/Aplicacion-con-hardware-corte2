@@ -1,25 +1,26 @@
 package com.softcode.mymagicapp.authfeature.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.softcode.mymagicapp.authfeature.domain.usecases.LoadLoggedUserUseCase
+import com.softcode.mymagicapp.authfeature.domain.usecases.LoginUseCase
 import com.softcode.mymagicapp.authfeature.presentation.ui.LoginEffect
 import com.softcode.mymagicapp.authfeature.presentation.ui.LoginUIState
-import com.softcode.mymagicapp.core.data.repository.AuthRepository
-import com.softcode.mymagicapp.core.data.repository.AuthResult
+import com.softcode.mymagicapp.core.domain.results.AuthResult
 import com.softcode.mymagicapp.core.ui.base.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val loginUseCase: LoginUseCase,
+    private val loadLoggedUserUseCase: LoadLoggedUserUseCase
 ) : BaseViewModel<LoginUIState, LoginEffect>(LoginUIState()) {
 
     init {
         viewModelScope.launch {
-            val userId = authRepository.currentUserId.first()
-            if (userId != null) {
+            val result = loadLoggedUserUseCase()
+            if(result is AuthResult.Success) {
                 sendEffect(LoginEffect.NavigateToCards)
             }
         }
@@ -45,7 +46,7 @@ class LoginViewModel @Inject constructor(
         }
 
         launchWithState(loading = { isLoading -> _uiState.value.copy(isLoading = isLoading) }) {
-            when (val result = authRepository.login(state.name.trim(), state.password)) {
+            when(val result = loginUseCase(state.name.trim(), state.password)) {
                 is AuthResult.Success -> sendEffect(LoginEffect.NavigateToCards)
                 is AuthResult.Error -> sendEffect(LoginEffect.ShowError(result.message))
             }

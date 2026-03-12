@@ -20,8 +20,10 @@ retrofit = "3.0.0"
 ioCoilVersion = "3.0.0"
 room = "2.7.1"
 datastorePreferences = "1.1.7"
+gsonConverter = "2.9.0"
 
 [libraries]
+converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "gsonConverter" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

@@ -1,47 +1,68 @@
 package com.softcode.mymagicapp.cardsfeature.presentation.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.viewModelScope
+import com.softcode.mymagicapp.cardsfeature.domain.usecases.AddCardUseCase
+import com.softcode.mymagicapp.cardsfeature.domain.usecases.DeleteCardUseCase
+import com.softcode.mymagicapp.cardsfeature.domain.usecases.GetCardsUseCase
+import com.softcode.mymagicapp.cardsfeature.domain.usecases.LogoutUseCase
+import com.softcode.mymagicapp.cardsfeature.domain.usecases.UpdateCardUseCase
 import com.softcode.mymagicapp.cardsfeature.presentation.ui.CardsEffect
 import com.softcode.mymagicapp.cardsfeature.presentation.ui.CardsUIState
-import com.softcode.mymagicapp.core.data.local.dao.UserDao
-import com.softcode.mymagicapp.core.data.local.entity.CardEntity
-import com.softcode.mymagicapp.core.data.repository.AuthRepository
-import com.softcode.mymagicapp.core.data.repository.CardRepository
+import com.softcode.mymagicapp.core.domain.entities.CardEntity
+import com.softcode.mymagicapp.core.domain.repository.AuthRepository
+import com.softcode.mymagicapp.core.domain.results.AuthResult
+import com.softcode.mymagicapp.core.domain.results.OperationResult
+import com.softcode.mymagicapp.core.hardware.domain.CameraManager
 import com.softcode.mymagicapp.core.ui.base.viewmodel.BaseViewModel
+import com.softcode.mymagicapp.core.ui.base.viewmodel.runAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class CardsViewModel @Inject constructor(
-    private val cardRepository: CardRepository,
+    private val getCardsUseCase: GetCardsUseCase,
+    private val addCardUseCase: AddCardUseCase,
+    private val updateCardUseCase: UpdateCardUseCase,
+    private val deleteCardUseCase: DeleteCardUseCase,
+    private val logoutUseCase: LogoutUseCase,
     private val authRepository: AuthRepository,
-    private val userDao: UserDao
+    private val cameraManager: CameraManager
 ) : BaseViewModel<CardsUIState, CardsEffect>(CardsUIState()) {
 
-    private var currentUserId: Long = -1
-
     init {
+        observeCards()
+        observeUser()
+        loadCards()
+    }
+
+    private fun observeCards() {
         viewModelScope.launch {
-            val userId = authRepository.currentUserId.first()
-            if (userId == null) {
-                sendEffect(CardsEffect.NavigateToLogin)
-                return@launch
-            }
-            currentUserId = userId
-
-            val user = userDao.getUserById(userId)
-            setState { it.copy(userName = user?.name ?: "") }
-
-            cardRepository.getCardsByUser(userId).collect { cards ->
-                setState { it.copy(cards = cards, isLoading = false) }
+            getCardsUseCase.cards.collect { cards ->
+                setState { it.copy(cards = cards) }
             }
         }
     }
 
-    fun onShowAddDialog() {
-        setState { it.copy(showAddDialog = true, dialogTitle = "", dialogDescription = "") }
+    private fun observeUser() {
+        viewModelScope.launch {
+            authRepository.user.collect { user ->
+                setState { it.copy(userName = user?.username ?: "") }
+            }
+        }
+    }
+
+    private fun loadCards() {
+        launchWithState(
+            loading = { isLoading -> _uiState.value.copy(isLoading = isLoading) }
+        ) {
+            when (val result = getCardsUseCase()) {
+                is OperationResult.Failure -> sendEffect(CardsEffect.ShowMessage(result.reason))
+                is OperationResult.Error -> sendEffect(CardsEffect.ShowMessage(result.error))
+                is OperationResult.Success -> Unit
+            }
+        }
     }
 
     fun onShowEditDialog(card: CardEntity) {
@@ -55,6 +76,67 @@ class CardsViewModel @Inject constructor(
         }
     }
 
+    fun onDialogTitleChanged(value: String) {
+        setState { it.copy(dialogTitle = value) }
+    }
+
+    fun onDialogDescriptionChanged(value: String) {
+        setState { it.copy(dialogDescription = value) }
+    }
+
+    fun onConfirmEdit() {
+        val state = _uiState.value
+        val card = state.editingCard ?: return
+        val title = state.dialogTitle.trim()
+        val description = state.dialogDescription.trim()
+
+        if (title.isBlank()) {
+            sendEffect(CardsEffect.ShowMessage("El título no puede estar vacío"))
+            return
+        }
+
+        val updatedCard = card.copy(title = title, description = description)
+        onDismissDialog()
+
+        runAsync {
+            when (val result = updateCardUseCase(updatedCard)) {
+                is OperationResult.Failure -> sendEffect(CardsEffect.ShowMessage(result.reason))
+                is OperationResult.Error -> sendEffect(CardsEffect.ShowMessage(result.error))
+                is OperationResult.Success -> Unit
+            }
+        }
+    }
+
+    fun onDeleteCard(card: CardEntity) {
+        runAsync {
+            when (val result = deleteCardUseCase(card)) {
+                is OperationResult.Failure -> sendEffect(CardsEffect.ShowMessage(result.reason))
+                is OperationResult.Error -> sendEffect(CardsEffect.ShowMessage(result.error))
+                is OperationResult.Success -> Unit
+            }
+        }
+    }
+
+    fun onLogout() {
+        runAsync {
+            when (logoutUseCase()) {
+                is AuthResult.Success -> sendEffect(CardsEffect.NavigateToLogin)
+                is AuthResult.Error -> sendEffect(CardsEffect.ShowMessage("Error al cerrar sesión"))
+            }
+        }
+    }
+
+    fun onTakePicture(context: Context) {
+        runAsync {
+            val uri = cameraManager.takePicture(context)
+            setState { it.copy(pendingImageUri = uri) }
+        }
+    }
+
+    fun onShowAddDialog() {
+        setState { it.copy(showAddDialog = true, dialogTitle = "", dialogDescription = "", pendingImageUri = null) }
+    }
+
     fun onDismissDialog() {
         setState {
             it.copy(
@@ -62,53 +144,31 @@ class CardsViewModel @Inject constructor(
                 showEditDialog = false,
                 editingCard = null,
                 dialogTitle = "",
-                dialogDescription = ""
+                dialogDescription = "",
+                pendingImageUri = null
             )
         }
     }
 
-    fun onDialogTitleChanged(title: String) {
-        setState { it.copy(dialogTitle = title) }
-    }
-
-    fun onDialogDescriptionChanged(description: String) {
-        setState { it.copy(dialogDescription = description) }
-    }
-
-    fun onConfirmAdd() {
+    fun onConfirmAdd(context: Context) {
         val state = _uiState.value
-        if (state.dialogTitle.isBlank()) return
-        viewModelScope.launch {
-            cardRepository.addCard(currentUserId, state.dialogTitle.trim(), state.dialogDescription.trim())
-            onDismissDialog()
-            sendEffect(CardsEffect.ShowMessage("Carta creada"))
-        }
-    }
+        val title = state.dialogTitle.trim()
+        val description = state.dialogDescription.trim()
 
-    fun onConfirmEdit() {
-        val state = _uiState.value
-        val card = state.editingCard ?: return
-        if (state.dialogTitle.isBlank()) return
-        viewModelScope.launch {
-            cardRepository.updateCard(
-                card.copy(title = state.dialogTitle.trim(), description = state.dialogDescription.trim())
-            )
-            onDismissDialog()
-            sendEffect(CardsEffect.ShowMessage("Carta actualizada"))
+        if (title.isBlank()) {
+            sendEffect(CardsEffect.ShowMessage("El título no puede estar vacío"))
+            return
         }
-    }
 
-    fun onDeleteCard(card: CardEntity) {
-        viewModelScope.launch {
-            cardRepository.deleteCard(card)
-            sendEffect(CardsEffect.ShowMessage("Carta eliminada"))
-        }
-    }
+        val imageUri = state.pendingImageUri
+        onDismissDialog()
 
-    fun onLogout() {
-        viewModelScope.launch {
-            authRepository.logout()
-            sendEffect(CardsEffect.NavigateToLogin)
+        runAsync {
+            when (val result = addCardUseCase(title, description, imageUri, context)) {
+                is OperationResult.Failure -> sendEffect(CardsEffect.ShowMessage(result.reason))
+                is OperationResult.Error -> sendEffect(CardsEffect.ShowMessage(result.error))
+                is OperationResult.Success -> Unit
+            }
         }
     }
 }

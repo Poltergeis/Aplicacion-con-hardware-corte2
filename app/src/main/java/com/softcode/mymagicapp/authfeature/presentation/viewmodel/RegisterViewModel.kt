@@ -1,16 +1,16 @@
 package com.softcode.mymagicapp.authfeature.presentation.viewmodel
 
+import com.softcode.mymagicapp.authfeature.domain.usecases.RegisterUseCase
 import com.softcode.mymagicapp.authfeature.presentation.ui.RegisterEffect
 import com.softcode.mymagicapp.authfeature.presentation.ui.RegisterUIState
-import com.softcode.mymagicapp.core.data.repository.AuthRepository
-import com.softcode.mymagicapp.core.data.repository.AuthResult
+import com.softcode.mymagicapp.core.domain.results.AuthResult
 import com.softcode.mymagicapp.core.ui.base.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val registerUseCase: RegisterUseCase
 ) : BaseViewModel<RegisterUIState, RegisterEffect>(RegisterUIState()) {
 
     fun onNameChanged(name: String) {
@@ -36,7 +36,7 @@ class RegisterViewModel @Inject constructor(
         if (hasError) return
 
         launchWithState(loading = { isLoading -> _uiState.value.copy(isLoading = isLoading) }) {
-            when (val result = authRepository.register(state.name.trim(), state.password)) {
+            when (val result = registerUseCase(state.name.trim(), state.password)) {
                 is AuthResult.Success -> sendEffect(RegisterEffect.NavigateToCards)
                 is AuthResult.Error -> sendEffect(RegisterEffect.ShowError(result.message))
             }
