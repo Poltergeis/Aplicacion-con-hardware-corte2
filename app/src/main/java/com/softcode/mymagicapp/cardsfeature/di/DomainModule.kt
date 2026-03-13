@@ -1,5 +1,6 @@
 package com.softcode.mymagicapp.cardsfeature.di
 
+import com.softcode.mymagicapp.cardsfeature.data.UploadCardImageUseCase
 import com.softcode.mymagicapp.cardsfeature.domain.usecases.AddCardUseCase
 import com.softcode.mymagicapp.cardsfeature.domain.usecases.DeleteCardUseCase
 import com.softcode.mymagicapp.cardsfeature.domain.usecases.GetCardsUseCase
@@ -18,8 +19,8 @@ import javax.inject.Singleton
 object DomainModule {
     @Provides
     @Singleton
-    fun provideAddCardUseCase(cardRepository: CardRepository, authRepository: AuthRepository): AddCardUseCase {
-        return AddCardUseCase(cardRepository, authRepository)
+    fun provideAddCardUseCase(cardRepository: CardRepository, authRepository: AuthRepository, uploadCardImageUseCase: UploadCardImageUseCase): AddCardUseCase {
+        return AddCardUseCase(cardRepository, authRepository, uploadCardImageUseCase)
     }
 
     @Provides

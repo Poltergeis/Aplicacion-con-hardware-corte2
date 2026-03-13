@@ -171,4 +171,8 @@ class CardsViewModel @Inject constructor(
             }
         }
     }
+
+    fun onCameraPermissionDenied() {
+        sendEffect(CardsEffect.ShowMessage("Se necesita permiso de cámara para tomar fotos"))
+    }
 }

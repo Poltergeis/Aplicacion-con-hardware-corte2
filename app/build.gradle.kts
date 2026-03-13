@@ -69,6 +69,8 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.converter.gson)
 
+    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
+
     // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

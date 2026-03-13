@@ -1,7 +1,11 @@
 package com.softcode.mymagicapp.cardsfeature.presentation.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,8 +52,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.softcode.mymagicapp.cardsfeature.presentation.ui.CardsEffect
 import com.softcode.mymagicapp.cardsfeature.presentation.viewmodel.CardsViewModel
 import com.softcode.mymagicapp.core.domain.entities.CardEntity
@@ -66,6 +74,30 @@ fun CardsScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            viewModel.onTakePicture(context)
+        } else {
+            viewModel.onCameraPermissionDenied()
+        }
+    }
+
+    fun requestCameraOrLaunch() {
+        when {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                viewModel.onTakePicture(context)
+            }
+            else -> {
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -173,11 +205,12 @@ fun CardsScreen(
             onDismiss = viewModel::onDismissDialog,
             showCameraOption = state.showAddDialog,
             pendingImageUri = state.pendingImageUri,
-            onTakePicture = { viewModel.onTakePicture(context) }
+            onTakePicture = { requestCameraOrLaunch() }
         )
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun CardItem(
     card: CardEntity,
@@ -185,7 +218,6 @@ private fun CardItem(
     onDelete: () -> Unit
 ) {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -196,7 +228,9 @@ private fun CardItem(
             modifier = Modifier.padding(16.dp)
         ) {
             if (card.imageUrl.isNotBlank()) {
-                AsyncImage(
+                val context = LocalContext.current
+
+                GlideImage(
                     model = card.imageUrl,
                     contentDescription = card.title,
                     contentScale = ContentScale.Crop,

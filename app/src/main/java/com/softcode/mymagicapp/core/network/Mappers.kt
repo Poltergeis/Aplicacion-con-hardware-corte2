@@ -7,7 +7,8 @@ fun CardModel.toEntity() = CardEntity(
     userId = userId,
     title = title,
     description = description,
-    createdAt = createdAt
+    createdAt = createdAt,
+    imageUrl = imageUrl
 )
 
 fun CardEntity.toModel() = CardModel(
