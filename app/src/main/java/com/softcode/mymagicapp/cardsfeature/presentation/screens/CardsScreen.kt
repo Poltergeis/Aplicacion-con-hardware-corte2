@@ -23,8 +23,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -48,6 +54,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -143,47 +150,95 @@ fun CardsScreen(
             }
         }
     ) { scaffoldPadding ->
-        when {
-            state.isLoading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(scaffoldPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-
-            state.cards.isEmpty() -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(scaffoldPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "No tienes cartas aún",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(scaffoldPadding)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = state.searchQuery,
+                    onValueChange = viewModel::onSearchQueryChanged,
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("Buscar cartas...") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                    trailingIcon = {
+                        if (state.searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
+                                Icon(Icons.Default.Close, contentDescription = "Limpiar")
+                            }
+                        }
+                    },
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                IconButton(onClick = viewModel::onToggleShowOnlyFavorites) {
+                    Icon(
+                        if (state.showOnlyFavorites) Icons.Default.Favorite
+                        else Icons.Default.FavoriteBorder,
+                        contentDescription = "Filtrar favoritos",
+                        tint = if (state.showOnlyFavorites) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
-            else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(scaffoldPadding),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(state.cards, key = { it.id }) { card ->
-                        CardItem(
-                            card = card,
-                            onEdit = { viewModel.onShowEditDialog(card) },
-                            onDelete = { viewModel.onDeleteCard(card) }
+            when {
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                state.cards.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No tienes cartas aún",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                    }
+                }
+
+                state.filteredCards.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No se encontraron resultados",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(state.filteredCards, key = { it.id }) { card ->
+                            CardItem(
+                                card = card,
+                                isFavorite = card.id in state.favoriteCardIds,
+                                onEdit = { viewModel.onShowEditDialog(card) },
+                                onDelete = { viewModel.onDeleteCard(card) },
+                                onToggleFavorite = { viewModel.onToggleFavorite(card.id) }
+                            )
+                        }
                     }
                 }
             }
@@ -214,8 +269,10 @@ fun CardsScreen(
 @Composable
 private fun CardItem(
     card: CardEntity,
+    isFavorite: Boolean,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onToggleFavorite: () -> Unit
 ) {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
     Card(
@@ -256,6 +313,13 @@ private fun CardItem(
                     modifier = Modifier.weight(1f)
                 )
                 Row {
+                    IconButton(onClick = onToggleFavorite) {
+                        Icon(
+                            if (isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
+                            contentDescription = if (isFavorite) "Quitar de favoritos" else "Agregar a favoritos",
+                            tint = if (isFavorite) Color(0xFFFFD700) else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     IconButton(onClick = onEdit) {
                         Icon(
                             Icons.Default.Edit,
