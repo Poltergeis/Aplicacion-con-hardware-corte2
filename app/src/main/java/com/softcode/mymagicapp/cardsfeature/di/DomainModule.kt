@@ -31,8 +31,8 @@ object DomainModule {
 
     @Provides
     @Singleton
-    fun provideGetCardsUseCase(repository: CardRepository): GetCardsUseCase {
-        return GetCardsUseCase(repository)
+    fun provideGetCardsUseCase(repository: CardRepository, authRepository: AuthRepository): GetCardsUseCase {
+        return GetCardsUseCase(repository, authRepository)
     }
 
     @Provides
