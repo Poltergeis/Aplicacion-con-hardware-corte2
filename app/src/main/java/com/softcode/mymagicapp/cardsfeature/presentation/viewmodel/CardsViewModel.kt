@@ -175,4 +175,23 @@ class CardsViewModel @Inject constructor(
     fun onCameraPermissionDenied() {
         sendEffect(CardsEffect.ShowMessage("Se necesita permiso de cámara para tomar fotos"))
     }
+
+    fun onSearchQueryChanged(query: String) {
+        setState { it.copy(searchQuery = query) }
+    }
+
+    fun onToggleFavorite(cardId: Long) {
+        setState { state ->
+            val newFavorites = if (cardId in state.favoriteCardIds) {
+                state.favoriteCardIds - cardId
+            } else {
+                state.favoriteCardIds + cardId
+            }
+            state.copy(favoriteCardIds = newFavorites)
+        }
+    }
+
+    fun onToggleShowOnlyFavorites() {
+        setState { it.copy(showOnlyFavorites = !it.showOnlyFavorites) }
+    }
 }
