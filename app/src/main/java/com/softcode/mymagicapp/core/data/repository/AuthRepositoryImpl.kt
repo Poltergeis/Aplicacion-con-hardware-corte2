@@ -1,5 +1,7 @@
 package com.softcode.mymagicapp.core.data.repository
 
+import com.softcode.mymagicapp.core.data.local.dao.UserDao
+import com.softcode.mymagicapp.core.data.local.entity.UserEntity as RoomUserEntity
 import com.softcode.mymagicapp.core.data.session.SessionManager
 import com.softcode.mymagicapp.core.domain.entities.UserEntity
 import com.softcode.mymagicapp.core.domain.repository.AuthRepository
@@ -17,7 +19,8 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val sessionManager: SessionManager,
-    private val api: CardsApi
+    private val api: CardsApi,
+    private val userDao: UserDao
 ) : AuthRepository {
 
     private val _currentUser = MutableStateFlow<UserEntity?>(null)
@@ -33,7 +36,8 @@ class AuthRepositoryImpl @Inject constructor(
                 val id = body?.id
                 if ((token != null && name != null) && id != null) {
                     sessionManager.saveSession(name, token)
-                    _currentUser.value = UserEntity(id,name, token)
+                    userDao.upsertUser(RoomUserEntity(id = id, name = name, passwordHash = ""))
+                    _currentUser.value = UserEntity(id, name, token)
                     AuthResult.Success()
                 } else {
                     AuthResult.Error("Invalid server response")
@@ -57,6 +61,7 @@ class AuthRepositoryImpl @Inject constructor(
                 val id = body?.id
                 if ((token != null && name != null) && id != null) {
                     sessionManager.saveSession(name, token)
+                    userDao.upsertUser(RoomUserEntity(id = id, name = name, passwordHash = ""))
                     _currentUser.value = UserEntity(id, name, token)
                     AuthResult.Success()
                 } else {
@@ -88,6 +93,7 @@ class AuthRepositoryImpl @Inject constructor(
                 val response = api.validateCurrentToken(VerifyLoggedUserRequest(session.token))
                 if (response.isSuccessful) {
                     val body = response.body()!!
+                    userDao.upsertUser(RoomUserEntity(id = body.id!!, name = body.username!!, passwordHash = ""))
                     _currentUser.value = UserEntity(body.id!!, body.username!!, null)
                     AuthResult.Success()
                 } else {

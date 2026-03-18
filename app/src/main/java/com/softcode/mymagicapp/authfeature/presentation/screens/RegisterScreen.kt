@@ -3,7 +3,6 @@ package com.softcode.mymagicapp.authfeature.presentation.screens
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -43,7 +42,6 @@ import com.softcode.mymagicapp.authfeature.presentation.viewmodel.RegisterViewMo
 @Composable
 fun RegisterScreen(
     viewModel: RegisterViewModel = hiltViewModel(),
-    innerPadding: PaddingValues,
     onNavigateToLogin: () -> Unit,
     onRegisterSuccess: () -> Unit
 ) {
@@ -65,7 +63,6 @@ fun RegisterScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(innerPadding)
             .padding(horizontal = 32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
