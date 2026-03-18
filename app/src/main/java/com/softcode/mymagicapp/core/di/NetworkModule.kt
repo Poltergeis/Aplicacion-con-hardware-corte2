@@ -1,9 +1,6 @@
 package com.softcode.mymagicapp.core.di
 
-import com.softcode.mymagicapp.core.data.repository.AuthRepositoryImpl
-import com.softcode.mymagicapp.core.data.repository.CardRepositoryImpl
 import com.softcode.mymagicapp.core.data.session.SessionManager
-import com.softcode.mymagicapp.core.domain.repository.CardRepository
 import com.softcode.mymagicapp.core.network.CardsApi
 import dagger.Module
 import dagger.Provides
@@ -54,7 +51,7 @@ object NetworkModule {
     fun provideRetrofitClient(client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .client(client)
-            .baseUrl("http://192.168.0.13:3000/")
+            .baseUrl("http://10.121.56.4:3000/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -63,17 +60,5 @@ object NetworkModule {
     @Singleton
     fun provideCardsApi(retrofit: Retrofit): CardsApi {
         return retrofit.create(CardsApi::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun provideAuthRepository(api: CardsApi, sessionManager: SessionManager): AuthRepositoryImpl {
-        return AuthRepositoryImpl(sessionManager, api)
-    }
-
-    @Provides
-    @Singleton
-    fun provideCardsRepository(api: CardsApi): CardRepositoryImpl {
-        return CardRepositoryImpl(api)
     }
 }

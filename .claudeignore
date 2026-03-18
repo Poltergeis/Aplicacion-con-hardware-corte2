@@ -1,0 +1,18 @@
+# Build artifacts
+**/build/
+**/.gradle/
+bin/
+gen/
+
+# IDE settings
+.idea/
+*.iml
+.DS_Store
+
+# Android specific
+local.properties
+.cxx/
+capture/
+
+# Version control (usually ignored by default, but safe to add)
+.git/

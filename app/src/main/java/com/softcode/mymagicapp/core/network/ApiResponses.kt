@@ -1,7 +1,5 @@
 package com.softcode.mymagicapp.core.network
 
-import androidx.room.PrimaryKey
-import com.softcode.mymagicapp.core.data.local.entity.CardEntity
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -19,7 +17,7 @@ data class LoginResponse(
 
 @Serializable
 data class CardModel(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val id: Long = 0,
     val userId: Long,
     val title: String,
     val description: String,

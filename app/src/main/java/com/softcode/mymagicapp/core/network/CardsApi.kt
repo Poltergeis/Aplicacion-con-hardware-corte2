@@ -28,10 +28,10 @@ interface CardsApi {
     suspend fun postCard(@Body card: CardModel): Response<CardModel>
 
     @PUT("cards")
-    suspend fun updateCard(card: CardModel): Response<ApiResponse>
+    suspend fun updateCard(@Body card: CardModel): Response<ApiResponse>
 
     @HTTP(method = "DELETE", path = "cards", hasBody = true)
-    suspend fun deleteCard(card: CardModel): Response<ApiResponse>
+    suspend fun deleteCard(@Body card: CardModel): Response<ApiResponse>
 
     @Multipart
     @POST("cards/image")

@@ -22,5 +22,6 @@ data class CardEntity(
     val userId: Long,
     val title: String,
     val description: String,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val imageUrl: String = ""
 )

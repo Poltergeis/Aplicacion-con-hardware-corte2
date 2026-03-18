@@ -9,7 +9,7 @@ import com.softcode.mymagicapp.core.data.local.entity.UserEntity
 
 @Database(
     entities = [UserEntity::class, CardEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
