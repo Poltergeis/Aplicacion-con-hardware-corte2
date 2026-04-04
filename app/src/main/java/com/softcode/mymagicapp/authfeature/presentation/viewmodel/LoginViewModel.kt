@@ -7,12 +7,9 @@ import com.softcode.mymagicapp.authfeature.presentation.ui.LoginEffect
 import com.softcode.mymagicapp.authfeature.presentation.ui.LoginUIState
 import com.softcode.mymagicapp.core.domain.results.AuthResult
 import com.softcode.mymagicapp.core.ui.base.viewmodel.BaseViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class LoginViewModel @Inject constructor(
+class LoginViewModel(
     private val loginUseCase: LoginUseCase,
     private val loadLoggedUserUseCase: LoadLoggedUserUseCase
 ) : BaseViewModel<LoginUIState, LoginEffect>(LoginUIState()) {
@@ -20,7 +17,7 @@ class LoginViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val result = loadLoggedUserUseCase()
-            if(result is AuthResult.Success) {
+            if (result is AuthResult.Success) {
                 sendEffect(LoginEffect.NavigateToCards)
             }
         }
@@ -46,7 +43,7 @@ class LoginViewModel @Inject constructor(
         }
 
         launchWithState(loading = { isLoading -> _uiState.value.copy(isLoading = isLoading) }) {
-            when(val result = loginUseCase(state.name.trim(), state.password)) {
+            when (val result = loginUseCase(state.name.trim(), state.password)) {
                 is AuthResult.Success -> sendEffect(LoginEffect.NavigateToCards)
                 is AuthResult.Error -> sendEffect(LoginEffect.ShowError(result.message))
             }

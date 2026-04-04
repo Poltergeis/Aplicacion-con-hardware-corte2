@@ -1,6 +1,5 @@
 package com.softcode.mymagicapp.cardsfeature.presentation.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.viewModelScope
 import com.softcode.mymagicapp.cardsfeature.domain.usecases.AddCardUseCase
 import com.softcode.mymagicapp.cardsfeature.domain.usecases.DeleteCardUseCase
@@ -13,36 +12,22 @@ import com.softcode.mymagicapp.core.domain.entities.CardEntity
 import com.softcode.mymagicapp.core.domain.repository.AuthRepository
 import com.softcode.mymagicapp.core.domain.results.AuthResult
 import com.softcode.mymagicapp.core.domain.results.OperationResult
-import com.softcode.mymagicapp.core.hardware.domain.CameraManager
 import com.softcode.mymagicapp.core.ui.base.viewmodel.BaseViewModel
 import com.softcode.mymagicapp.core.ui.base.viewmodel.runAsync
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class CardsViewModel @Inject constructor(
+class CardsViewModel(
     private val getCardsUseCase: GetCardsUseCase,
     private val addCardUseCase: AddCardUseCase,
     private val updateCardUseCase: UpdateCardUseCase,
     private val deleteCardUseCase: DeleteCardUseCase,
     private val logoutUseCase: LogoutUseCase,
-    private val authRepository: AuthRepository,
-    private val cameraManager: CameraManager
+    private val authRepository: AuthRepository
 ) : BaseViewModel<CardsUIState, CardsEffect>(CardsUIState()) {
 
     init {
-        observeCards()
         observeUser()
         loadCards()
-    }
-
-    private fun observeCards() {
-        viewModelScope.launch {
-            getCardsUseCase.cards.collect { cards ->
-                setState { it.copy(cards = cards) }
-            }
-        }
     }
 
     private fun observeUser() {
@@ -53,14 +38,14 @@ class CardsViewModel @Inject constructor(
         }
     }
 
-    private fun loadCards() {
+    fun loadCards() {
         launchWithState(
             loading = { isLoading -> _uiState.value.copy(isLoading = isLoading) }
         ) {
             when (val result = getCardsUseCase()) {
+                is OperationResult.Success -> setState { it.copy(cards = result.data) }
                 is OperationResult.Failure -> sendEffect(CardsEffect.ShowMessage(result.reason))
                 is OperationResult.Error -> sendEffect(CardsEffect.ShowMessage(result.error))
-                is OperationResult.Success -> Unit
             }
         }
     }
@@ -100,9 +85,9 @@ class CardsViewModel @Inject constructor(
 
         runAsync {
             when (val result = updateCardUseCase(updatedCard)) {
+                is OperationResult.Success -> loadCards()
                 is OperationResult.Failure -> sendEffect(CardsEffect.ShowMessage(result.reason))
                 is OperationResult.Error -> sendEffect(CardsEffect.ShowMessage(result.error))
-                is OperationResult.Success -> Unit
             }
         }
     }
@@ -110,9 +95,9 @@ class CardsViewModel @Inject constructor(
     fun onDeleteCard(card: CardEntity) {
         runAsync {
             when (val result = deleteCardUseCase(card)) {
+                is OperationResult.Success -> loadCards()
                 is OperationResult.Failure -> sendEffect(CardsEffect.ShowMessage(result.reason))
                 is OperationResult.Error -> sendEffect(CardsEffect.ShowMessage(result.error))
-                is OperationResult.Success -> Unit
             }
         }
     }
@@ -126,15 +111,8 @@ class CardsViewModel @Inject constructor(
         }
     }
 
-    fun onTakePicture(context: Context) {
-        runAsync {
-            val uri = cameraManager.takePicture(context)
-            setState { it.copy(pendingImageUri = uri) }
-        }
-    }
-
     fun onShowAddDialog() {
-        setState { it.copy(showAddDialog = true, dialogTitle = "", dialogDescription = "", pendingImageUri = null) }
+        setState { it.copy(showAddDialog = true, dialogTitle = "", dialogDescription = "") }
     }
 
     fun onDismissDialog() {
@@ -144,13 +122,12 @@ class CardsViewModel @Inject constructor(
                 showEditDialog = false,
                 editingCard = null,
                 dialogTitle = "",
-                dialogDescription = "",
-                pendingImageUri = null
+                dialogDescription = ""
             )
         }
     }
 
-    fun onConfirmAdd(context: Context) {
+    fun onConfirmAdd() {
         val state = _uiState.value
         val title = state.dialogTitle.trim()
         val description = state.dialogDescription.trim()
@@ -160,20 +137,15 @@ class CardsViewModel @Inject constructor(
             return
         }
 
-        val imageUri = state.pendingImageUri
         onDismissDialog()
 
         runAsync {
-            when (val result = addCardUseCase(title, description, imageUri, context)) {
+            when (val result = addCardUseCase(title, description)) {
+                is OperationResult.Success -> loadCards()
                 is OperationResult.Failure -> sendEffect(CardsEffect.ShowMessage(result.reason))
                 is OperationResult.Error -> sendEffect(CardsEffect.ShowMessage(result.error))
-                is OperationResult.Success -> Unit
             }
         }
-    }
-
-    fun onCameraPermissionDenied() {
-        sendEffect(CardsEffect.ShowMessage("Se necesita permiso de cámara para tomar fotos"))
     }
 
     fun onSearchQueryChanged(query: String) {

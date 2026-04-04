@@ -2,9 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.jetbrainsKotlinSerialization)
-    alias(libs.plugins.secrets.gradle)
-    alias(libs.plugins.hilt.android)
-    alias(libs.plugins.devtools.ksp)
 }
 
 android {
@@ -61,25 +58,11 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.io.coil.kt.coil.compose)
     implementation(libs.com.squareup.retrofit2.retrofit)
-    implementation(libs.hilt.android)
-    implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.compose.ui.text.google.fonts)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.converter.gson)
 
-    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
-
-    // Room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
-
-    // DataStore
-    implementation(libs.androidx.datastore.preferences)
-
-    ksp(libs.hilt.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

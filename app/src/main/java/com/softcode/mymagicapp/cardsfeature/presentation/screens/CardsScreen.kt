@@ -1,11 +1,6 @@
 package com.softcode.mymagicapp.cardsfeature.presentation.screens
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -39,7 +33,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -50,18 +43,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import androidx.hilt.navigation.compose.hiltViewModel
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
 import com.softcode.mymagicapp.cardsfeature.presentation.ui.CardsEffect
 import com.softcode.mymagicapp.cardsfeature.presentation.viewmodel.CardsViewModel
 import com.softcode.mymagicapp.core.domain.entities.CardEntity
@@ -71,35 +56,11 @@ import java.util.Locale
 
 @Composable
 fun CardsScreen(
-    viewModel: CardsViewModel = hiltViewModel(),
+    viewModel: CardsViewModel,
     onLogout: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-
-    val cameraPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) {
-            viewModel.onTakePicture(context)
-        } else {
-            viewModel.onCameraPermissionDenied()
-        }
-    }
-
-    fun requestCameraOrLaunch() {
-        when {
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                viewModel.onTakePicture(context)
-            }
-            else -> {
-                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-            }
-        }
-    }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -226,20 +187,12 @@ fun CardsScreen(
             cardDescription = state.dialogDescription,
             onTitleChanged = viewModel::onDialogTitleChanged,
             onDescriptionChanged = viewModel::onDialogDescriptionChanged,
-            onConfirm = if (state.showAddDialog) {
-                { viewModel.onConfirmAdd(context) }
-            } else {
-                viewModel::onConfirmEdit
-            },
-            onDismiss = viewModel::onDismissDialog,
-            showCameraOption = state.showAddDialog,
-            pendingImageUri = state.pendingImageUri,
-            onTakePicture = { requestCameraOrLaunch() }
+            onConfirm = if (state.showAddDialog) viewModel::onConfirmAdd else viewModel::onConfirmEdit,
+            onDismiss = viewModel::onDismissDialog
         )
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun CardItem(
     card: CardEntity,
@@ -258,19 +211,6 @@ private fun CardItem(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            if (card.imageUrl.isNotBlank()) {
-                GlideImage(
-                    model = card.imageUrl,
-                    contentDescription = card.title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(MaterialTheme.shapes.medium)
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -338,10 +278,7 @@ private fun CardDialog(
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
-    showCameraOption: Boolean = false,
-    pendingImageUri: Uri? = null,
-    onTakePicture: () -> Unit = {}
+    onDismiss: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -364,31 +301,6 @@ private fun CardDialog(
                     maxLines = 5,
                     modifier = Modifier.fillMaxWidth()
                 )
-                if (showCameraOption) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    if (pendingImageUri != null) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(pendingImageUri)
-                                .build(),
-                            contentDescription = "Foto seleccionada",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(160.dp)
-                                .clip(MaterialTheme.shapes.medium)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                    OutlinedButton(
-                        onClick = onTakePicture,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Default.Camera, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(if (pendingImageUri != null) "Retomar foto" else "Tomar foto")
-                    }
-                }
             }
         },
         confirmButton = {

@@ -35,18 +35,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.softcode.mymagicapp.authfeature.presentation.ui.RegisterEffect
 import com.softcode.mymagicapp.authfeature.presentation.viewmodel.RegisterViewModel
 
 @Composable
 fun RegisterScreen(
-    viewModel: RegisterViewModel = hiltViewModel(),
+    factory: ViewModelProvider.Factory,
     onNavigateToLogin: () -> Unit,
     onRegisterSuccess: () -> Unit
 ) {
-    val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val viewModel: RegisterViewModel = viewModel(factory = factory)
+
+    val state by viewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {

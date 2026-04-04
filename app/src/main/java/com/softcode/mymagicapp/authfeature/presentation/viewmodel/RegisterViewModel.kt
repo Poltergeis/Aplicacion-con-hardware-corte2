@@ -5,11 +5,8 @@ import com.softcode.mymagicapp.authfeature.presentation.ui.RegisterEffect
 import com.softcode.mymagicapp.authfeature.presentation.ui.RegisterUIState
 import com.softcode.mymagicapp.core.domain.results.AuthResult
 import com.softcode.mymagicapp.core.ui.base.viewmodel.BaseViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 
-@HiltViewModel
-class RegisterViewModel @Inject constructor(
+class RegisterViewModel(
     private val registerUseCase: RegisterUseCase
 ) : BaseViewModel<RegisterUIState, RegisterEffect>(RegisterUIState()) {
 

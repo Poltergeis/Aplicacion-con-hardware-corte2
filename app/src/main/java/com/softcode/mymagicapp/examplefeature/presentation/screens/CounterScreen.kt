@@ -12,14 +12,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.softcode.mymagicapp.examplefeature.presentation.ui.CounterEffect
 import com.softcode.mymagicapp.examplefeature.presentation.viewmodel.CounterViewModel
 
 //te recomiendo usar innerPadding recogido desde Scaffold para agregar margenes y no consumir toda la pantalla
 //esto evita que la vista abarque por encima de la camara por ejemplo
 @Composable
-fun CounterScreen(viewModel: CounterViewModel = hiltViewModel(), innerPadding: PaddingValues) {
+fun CounterScreen(viewModel: CounterViewModel = viewModel(), innerPadding: PaddingValues) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 

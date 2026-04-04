@@ -1,6 +1,5 @@
 package com.softcode.mymagicapp.cardsfeature.presentation.ui
 
-import android.net.Uri
 import com.softcode.mymagicapp.core.domain.entities.CardEntity
 
 data class CardsUIState(
@@ -12,7 +11,6 @@ data class CardsUIState(
     val dialogTitle: String = "",
     val dialogDescription: String = "",
     val userName: String = "",
-    val pendingImageUri: Uri? = null,
     val searchQuery: String = "",
     val favoriteCardIds: Set<Long> = emptySet(),
     val showOnlyFavorites: Boolean = false

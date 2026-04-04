@@ -5,6 +5,5 @@ data class CardEntity(
     val userId: Long,
     val title: String,
     val description: String,
-    val createdAt: Long,
-    val imageUrl: String = ""
+    val createdAt: Long
 )

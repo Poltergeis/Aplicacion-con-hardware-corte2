@@ -1,31 +1,18 @@
 package com.softcode.mymagicapp.core.network
 
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class ApiResponse(
+data class AuthResponse(
+    val id: Long,
+    val username: String,
+    val token: String,
     val message: String?
 )
 
-@Serializable
-data class LoginResponse(
-    val id: Long?,
-    val username: String?,
-    val token: String?,
-    val message: String?
-)
-
-@Serializable
-data class CardModel(
-    val id: Long = 0,
+data class CardResponse(
+    val id: Long,
     val userId: Long,
     val title: String,
     val description: String,
-    val createdAt: Long = System.currentTimeMillis(),
-    val imageUrl: String
+    val createdAt: Long
 )
 
-@Serializable
-data class ImageUploadResponse(
-    val imageUrl: String
-)
+data class MessageResponse(val message: String?)

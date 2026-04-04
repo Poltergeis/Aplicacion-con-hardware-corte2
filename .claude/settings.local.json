@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"^[^.]*$\")",
+      "Bash(rm -f app/src/main/java/com/softcode/mymagicapp/DemoHiltApp.kt app/src/main/java/com/softcode/mymagicapp/core/navigation/SettingsViewModel.kt app/src/main/java/com/softcode/mymagicapp/cardsfeature/data/UploadCardImageUseCase.kt app/src/main/java/com/softcode/mymagicapp/authfeature/di/NetworkModule.kt app/src/main/java/com/softcode/mymagicapp/cardsfeature/di/DomainModule.kt app/src/main/java/com/softcode/mymagicapp/core/di/DatabaseModule.kt app/src/main/java/com/softcode/mymagicapp/core/di/HardwareModule.kt app/src/main/java/com/softcode/mymagicapp/core/di/SessionModule.kt app/src/main/java/com/softcode/mymagicapp/core/di/RepositoryModule.kt app/src/main/java/com/softcode/mymagicapp/core/di/NetworkModule.kt)",
+      "Bash(rm -rf app/src/main/java/com/softcode/mymagicapp/core/hardware app/src/main/java/com/softcode/mymagicapp/core/data/local app/src/main/java/com/softcode/mymagicapp/core/data/session)"
+    ]
+  }
+}
