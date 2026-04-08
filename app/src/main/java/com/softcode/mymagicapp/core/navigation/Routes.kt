@@ -10,3 +10,6 @@ object RegisterRoute
 
 @Serializable
 object CardsRoute
+
+@Serializable
+object ExchangeRoute

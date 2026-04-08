@@ -36,4 +36,14 @@ interface CardsApi {
     @Multipart
     @POST("cards/image")
     suspend fun uploadImage(@Part image: MultipartBody.Part): Response<ImageUploadResponse>
+
+    // ── Exchanges ────────────────────────────────────────────────────────────
+    @GET("exchanges")
+    suspend fun getExchanges(): Response<List<ExchangeModel>>
+
+    @POST("exchanges")
+    suspend fun createExchange(@Body body: CreateExchangeRequest): Response<ExchangeModel>
+
+    @PUT("exchanges")
+    suspend fun respondExchange(@Body body: RespondExchangeRequest): Response<ApiResponse>
 }

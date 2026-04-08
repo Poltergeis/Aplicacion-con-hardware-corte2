@@ -2,8 +2,10 @@ package com.softcode.mymagicapp.core.di
 
 import com.softcode.mymagicapp.core.data.repository.AuthRepositoryImpl
 import com.softcode.mymagicapp.core.data.repository.CardRepositoryImpl
+import com.softcode.mymagicapp.core.data.repository.ExchangeRepositoryImpl
 import com.softcode.mymagicapp.core.domain.repository.AuthRepository
 import com.softcode.mymagicapp.core.domain.repository.CardRepository
+import com.softcode.mymagicapp.core.domain.repository.ExchangeRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -24,4 +26,10 @@ abstract class RepositoryModule {
     abstract fun bindCardRepository(
         impl: CardRepositoryImpl
     ): CardRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindExchangeRepository(
+        impl: ExchangeRepositoryImpl
+    ): ExchangeRepository
 }

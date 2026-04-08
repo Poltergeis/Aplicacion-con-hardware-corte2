@@ -18,3 +18,16 @@ data class RegisterRequest(
 data class VerifyLoggedUserRequest(
     val token: String
 )
+
+@Serializable
+data class CreateExchangeRequest(
+    val receiverId: Long,
+    val proposerCardId: Long,
+    val receiverCardId: Long
+)
+
+@Serializable
+data class RespondExchangeRequest(
+    val exchangeId: Long,
+    val status: String
+)

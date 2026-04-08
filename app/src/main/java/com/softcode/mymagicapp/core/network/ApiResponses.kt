@@ -29,3 +29,18 @@ data class CardModel(
 data class ImageUploadResponse(
     val imageUrl: String
 )
+
+@Serializable
+data class ExchangeModel(
+    val id: Long = 0,
+    val proposerId: Long,
+    val receiverId: Long,
+    val proposerCardId: Long,
+    val receiverCardId: Long,
+    val proposerUsername: String = "",
+    val receiverUsername: String = "",
+    val proposerCardTitle: String = "",
+    val receiverCardTitle: String = "",
+    val status: String = "PENDING",
+    val createdAt: Long = System.currentTimeMillis()
+)

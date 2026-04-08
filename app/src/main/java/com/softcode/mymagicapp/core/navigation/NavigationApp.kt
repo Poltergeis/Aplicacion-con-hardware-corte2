@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -51,6 +52,8 @@ import com.softcode.mymagicapp.authfeature.presentation.screens.LoginScreen
 import com.softcode.mymagicapp.authfeature.presentation.screens.RegisterScreen
 import com.softcode.mymagicapp.cardsfeature.presentation.screens.CardsScreen
 import com.softcode.mymagicapp.cardsfeature.presentation.viewmodel.CardsViewModel
+import com.softcode.mymagicapp.exchangefeature.presentation.screens.ExchangeScreen
+import com.softcode.mymagicapp.exchangefeature.presentation.viewmodel.ExchangeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,6 +68,8 @@ fun NavigationApp(
     val isAuthRoute = currentDest?.hasRoute<LoginRoute>() == true ||
             currentDest?.hasRoute<RegisterRoute>() == true
     val isCardsRoute = currentDest?.hasRoute<CardsRoute>() == true
+    val isExchangeRoute = currentDest?.hasRoute<ExchangeRoute>() == true
+    val isMainRoute = isCardsRoute || isExchangeRoute
 
     val userName by navSharedViewModel.userName.collectAsState()
     val isFlashOn by settingsViewModel.isFlashOn.collectAsState()
@@ -139,9 +144,24 @@ fun NavigationApp(
                                 style = MaterialTheme.typography.titleLarge
                             )
                         }
+                        if (isExchangeRoute) {
+                            Text(
+                                text = "Intercambios",
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                        }
                     },
                     actions = {
-                        if (isCardsRoute) {
+                        if (isMainRoute) {
+                            // Toggle between Cards and Exchanges
+                            if (isCardsRoute) {
+                                IconButton(onClick = { navController.navigate(ExchangeRoute) }) {
+                                    Icon(
+                                        Icons.Default.SwapHoriz,
+                                        contentDescription = "Intercambios"
+                                    )
+                                }
+                            }
                             IconButton(onClick = { onLogoutAction?.invoke() }) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ExitToApp,
@@ -207,6 +227,14 @@ fun NavigationApp(
                             popUpTo(CardsRoute) { inclusive = true }
                         }
                     }
+                )
+            }
+
+            composable<ExchangeRoute> {
+                val exchangeViewModel: ExchangeViewModel = hiltViewModel()
+
+                ExchangeScreen(
+                    viewModel = exchangeViewModel
                 )
             }
         }

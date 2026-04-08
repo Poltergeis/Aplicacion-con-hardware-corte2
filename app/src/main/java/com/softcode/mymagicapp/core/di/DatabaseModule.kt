@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.softcode.mymagicapp.core.data.local.AppDatabase
 import com.softcode.mymagicapp.core.data.local.dao.CardDao
+import com.softcode.mymagicapp.core.data.local.dao.ExchangeDao
 import com.softcode.mymagicapp.core.data.local.dao.UserDao
 import dagger.Module
 import dagger.Provides
@@ -32,4 +33,7 @@ object DatabaseModule {
 
     @Provides
     fun provideCardDao(database: AppDatabase): CardDao = database.cardDao()
+
+    @Provides
+    fun provideExchangeDao(database: AppDatabase): ExchangeDao = database.exchangeDao()
 }
