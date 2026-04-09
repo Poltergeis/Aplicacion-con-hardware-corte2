@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Compare
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,6 +53,8 @@ import com.softcode.mymagicapp.authfeature.presentation.screens.LoginScreen
 import com.softcode.mymagicapp.authfeature.presentation.screens.RegisterScreen
 import com.softcode.mymagicapp.cardsfeature.presentation.screens.CardsScreen
 import com.softcode.mymagicapp.cardsfeature.presentation.viewmodel.CardsViewModel
+import com.softcode.mymagicapp.comparefeature.presentation.screens.CompareScreen
+import com.softcode.mymagicapp.comparefeature.presentation.viewmodel.CompareViewModel
 import com.softcode.mymagicapp.exchangefeature.presentation.screens.ExchangeScreen
 import com.softcode.mymagicapp.exchangefeature.presentation.viewmodel.ExchangeViewModel
 
@@ -69,7 +72,8 @@ fun NavigationApp(
             currentDest?.hasRoute<RegisterRoute>() == true
     val isCardsRoute = currentDest?.hasRoute<CardsRoute>() == true
     val isExchangeRoute = currentDest?.hasRoute<ExchangeRoute>() == true
-    val isMainRoute = isCardsRoute || isExchangeRoute
+    val isCompareRoute = currentDest?.hasRoute<CompareRoute>() == true
+    val isMainRoute = isCardsRoute || isExchangeRoute || isCompareRoute
 
     val userName by navSharedViewModel.userName.collectAsState()
     val isFlashOn by settingsViewModel.isFlashOn.collectAsState()
@@ -150,11 +154,23 @@ fun NavigationApp(
                                 style = MaterialTheme.typography.titleLarge
                             )
                         }
+                        if (isCompareRoute) {
+                            Text(
+                                text = "Comparador",
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                        }
                     },
                     actions = {
                         if (isMainRoute) {
-                            // Toggle between Cards and Exchanges
+                            // Navigation between features
                             if (isCardsRoute) {
+                                IconButton(onClick = { navController.navigate(CompareRoute) }) {
+                                    Icon(
+                                        Icons.Default.Compare,
+                                        contentDescription = "Comparador"
+                                    )
+                                }
                                 IconButton(onClick = { navController.navigate(ExchangeRoute) }) {
                                     Icon(
                                         Icons.Default.SwapHoriz,
@@ -235,6 +251,14 @@ fun NavigationApp(
 
                 ExchangeScreen(
                     viewModel = exchangeViewModel
+                )
+            }
+
+            composable<CompareRoute> {
+                val compareViewModel: CompareViewModel = hiltViewModel()
+
+                CompareScreen(
+                    viewModel = compareViewModel
                 )
             }
         }

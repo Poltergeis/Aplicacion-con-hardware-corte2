@@ -13,3 +13,6 @@ object CardsRoute
 
 @Serializable
 object ExchangeRoute
+
+@Serializable
+object CompareRoute
