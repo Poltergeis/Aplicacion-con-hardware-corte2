@@ -8,6 +8,7 @@ import com.softcode.mymagicapp.cardsfeature.domain.usecases.LogoutUseCase
 import com.softcode.mymagicapp.cardsfeature.domain.usecases.UpdateCardUseCase
 import com.softcode.mymagicapp.core.domain.repository.AuthRepository
 import com.softcode.mymagicapp.core.domain.repository.CardRepository
+import com.softcode.mymagicapp.core.hardware.domain.LocationProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,8 +20,13 @@ import javax.inject.Singleton
 object DomainModule {
     @Provides
     @Singleton
-    fun provideAddCardUseCase(cardRepository: CardRepository, authRepository: AuthRepository, uploadCardImageUseCase: UploadCardImageUseCase): AddCardUseCase {
-        return AddCardUseCase(cardRepository, authRepository, uploadCardImageUseCase)
+    fun provideAddCardUseCase(
+        cardRepository: CardRepository,
+        authRepository: AuthRepository,
+        uploadCardImageUseCase: UploadCardImageUseCase,
+        locationProvider: LocationProvider
+    ): AddCardUseCase {
+        return AddCardUseCase(cardRepository, authRepository, uploadCardImageUseCase, locationProvider)
     }
 
     @Provides

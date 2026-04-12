@@ -16,7 +16,9 @@ import com.softcode.mymagicapp.core.domain.results.OperationResult
 import com.softcode.mymagicapp.core.hardware.domain.CameraManager
 import com.softcode.mymagicapp.core.ui.base.viewmodel.BaseViewModel
 import com.softcode.mymagicapp.core.ui.base.viewmodel.runAsync
+import com.softcode.mymagicapp.core.workers.SyncScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,7 +30,8 @@ class CardsViewModel @Inject constructor(
     private val deleteCardUseCase: DeleteCardUseCase,
     private val logoutUseCase: LogoutUseCase,
     private val authRepository: AuthRepository,
-    private val cameraManager: CameraManager
+    private val cameraManager: CameraManager,
+    @ApplicationContext private val context: Context
 ) : BaseViewModel<CardsUIState, CardsEffect>(CardsUIState()) {
 
     init {
@@ -71,7 +74,10 @@ class CardsViewModel @Inject constructor(
                 showEditDialog = true,
                 editingCard = card,
                 dialogTitle = card.title,
-                dialogDescription = card.description
+                dialogDescription = card.description,
+                dialogPower = card.power,
+                dialogDefense = card.defense,
+                dialogRarity = card.rarity
             )
         }
     }
@@ -82,6 +88,18 @@ class CardsViewModel @Inject constructor(
 
     fun onDialogDescriptionChanged(value: String) {
         setState { it.copy(dialogDescription = value) }
+    }
+
+    fun onDialogPowerChanged(value: Int) {
+        setState { it.copy(dialogPower = value) }
+    }
+
+    fun onDialogDefenseChanged(value: Int) {
+        setState { it.copy(dialogDefense = value) }
+    }
+
+    fun onDialogRarityChanged(value: Int) {
+        setState { it.copy(dialogRarity = value) }
     }
 
     fun onConfirmEdit() {
@@ -95,7 +113,13 @@ class CardsViewModel @Inject constructor(
             return
         }
 
-        val updatedCard = card.copy(title = title, description = description)
+        val updatedCard = card.copy(
+            title = title,
+            description = description,
+            power = state.dialogPower,
+            defense = state.dialogDefense,
+            rarity = state.dialogRarity
+        )
         onDismissDialog()
 
         runAsync {
@@ -120,7 +144,10 @@ class CardsViewModel @Inject constructor(
     fun onLogout() {
         runAsync {
             when (logoutUseCase()) {
-                is AuthResult.Success -> sendEffect(CardsEffect.NavigateToLogin)
+                is AuthResult.Success -> {
+                    SyncScheduler.cancel(context)
+                    sendEffect(CardsEffect.NavigateToLogin)
+                }
                 is AuthResult.Error -> sendEffect(CardsEffect.ShowMessage("Error al cerrar sesión"))
             }
         }
@@ -134,7 +161,17 @@ class CardsViewModel @Inject constructor(
     }
 
     fun onShowAddDialog() {
-        setState { it.copy(showAddDialog = true, dialogTitle = "", dialogDescription = "", pendingImageUri = null) }
+        setState {
+            it.copy(
+                showAddDialog = true,
+                dialogTitle = "",
+                dialogDescription = "",
+                dialogPower = 1,
+                dialogDefense = 1,
+                dialogRarity = 1,
+                pendingImageUri = null
+            )
+        }
     }
 
     fun onDismissDialog() {
@@ -145,6 +182,9 @@ class CardsViewModel @Inject constructor(
                 editingCard = null,
                 dialogTitle = "",
                 dialogDescription = "",
+                dialogPower = 1,
+                dialogDefense = 1,
+                dialogRarity = 1,
                 pendingImageUri = null
             )
         }
@@ -161,10 +201,13 @@ class CardsViewModel @Inject constructor(
         }
 
         val imageUri = state.pendingImageUri
+        val power = state.dialogPower
+        val defense = state.dialogDefense
+        val rarity = state.dialogRarity
         onDismissDialog()
 
         runAsync {
-            when (val result = addCardUseCase(title, description, imageUri, context)) {
+            when (val result = addCardUseCase(title, description, imageUri, context, power, defense, rarity)) {
                 is OperationResult.Failure -> sendEffect(CardsEffect.ShowMessage(result.reason))
                 is OperationResult.Error -> sendEffect(CardsEffect.ShowMessage(result.error))
                 is OperationResult.Success -> Unit

@@ -1,26 +1,36 @@
 package com.softcode.mymagicapp.authfeature.presentation.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.messaging.FirebaseMessaging
 import com.softcode.mymagicapp.authfeature.domain.usecases.LoadLoggedUserUseCase
 import com.softcode.mymagicapp.authfeature.domain.usecases.LoginUseCase
 import com.softcode.mymagicapp.authfeature.presentation.ui.LoginEffect
 import com.softcode.mymagicapp.authfeature.presentation.ui.LoginUIState
 import com.softcode.mymagicapp.core.domain.results.AuthResult
+import com.softcode.mymagicapp.core.network.CardsApi
+import com.softcode.mymagicapp.core.network.UpdateFcmTokenRequest
 import com.softcode.mymagicapp.core.ui.base.viewmodel.BaseViewModel
+import com.softcode.mymagicapp.core.workers.SyncScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
-    private val loadLoggedUserUseCase: LoadLoggedUserUseCase
+    private val loadLoggedUserUseCase: LoadLoggedUserUseCase,
+    private val api: CardsApi,
+    @ApplicationContext private val context: Context
 ) : BaseViewModel<LoginUIState, LoginEffect>(LoginUIState()) {
 
     init {
         viewModelScope.launch {
             val result = loadLoggedUserUseCase()
-            if(result is AuthResult.Success) {
+            if (result is AuthResult.Success) {
+                SyncScheduler.schedule(context)
                 sendEffect(LoginEffect.NavigateToCards)
             }
         }
@@ -46,10 +56,21 @@ class LoginViewModel @Inject constructor(
         }
 
         launchWithState(loading = { isLoading -> _uiState.value.copy(isLoading = isLoading) }) {
-            when(val result = loginUseCase(state.name.trim(), state.password)) {
-                is AuthResult.Success -> sendEffect(LoginEffect.NavigateToCards)
+            when (val result = loginUseCase(state.name.trim(), state.password)) {
+                is AuthResult.Success -> {
+                    SyncScheduler.schedule(context)
+                    registerFcmToken()
+                    sendEffect(LoginEffect.NavigateToCards)
+                }
                 is AuthResult.Error -> sendEffect(LoginEffect.ShowError(result.message))
             }
+        }
+    }
+
+    private suspend fun registerFcmToken() {
+        runCatching {
+            val token = FirebaseMessaging.getInstance().token.await()
+            api.updateFcmToken(UpdateFcmTokenRequest(token))
         }
     }
 }

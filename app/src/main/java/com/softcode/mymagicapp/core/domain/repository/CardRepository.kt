@@ -11,7 +11,17 @@ interface CardRepository {
     /** Fetch cards from the API and write them to Room (SSOT sync). */
     suspend fun syncCards(userId: Long): OperationResult<Unit, String, String>
 
-    suspend fun addCard(userId: Long, title: String, description: String, imageUrl: String): OperationResult<Unit, String, String>
+    suspend fun addCard(
+        userId: Long,
+        title: String,
+        description: String,
+        imageUrl: String,
+        power: Int = 1,
+        defense: Int = 1,
+        rarity: Int = 1,
+        latitude: Double? = null,
+        longitude: Double? = null
+    ): OperationResult<Unit, String, String>
     suspend fun updateCard(card: CardEntity): OperationResult<Unit, String, String>
     suspend fun deleteCard(card: CardEntity): OperationResult<Unit, String, String>
 }

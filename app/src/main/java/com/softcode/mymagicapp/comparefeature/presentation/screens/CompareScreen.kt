@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,6 +30,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -216,14 +218,19 @@ private fun CompareContent(
     onRemove: (CardEntity) -> Unit,
     onClearAll: () -> Unit
 ) {
-    val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+    val powerWinner = cards.maxByOrNull { it.power }
+    val defenseWinner = cards.maxByOrNull { it.defense }
+    val rarityWinner = cards.maxByOrNull { it.rarity }
+    val winsPerCard = cards.associateWith { card ->
+        listOf(powerWinner, defenseWinner, rarityWinner).count { it?.id == card.id }
+    }
+    val overallWinner = winsPerCard.maxByOrNull { it.value }?.takeIf { it.value > 0 }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 8.dp)
     ) {
-        // Header row: clear all button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -241,10 +248,7 @@ private fun CompareContent(
             }
         }
 
-        // Comparison table
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(0.dp)
-        ) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(0.dp)) {
             // Card headers with images
             item {
                 CompareRow(label = "Carta") {
@@ -255,76 +259,130 @@ private fun CompareContent(
                 HorizontalDivider()
             }
 
-            // Title
+            // Power bars
             item {
-                CompareRow(label = "Titulo") {
+                AttributeCompareRow(
+                    label = "Poder",
+                    cards = cards,
+                    max = 10,
+                    getValue = { it.power },
+                    winner = powerWinner
+                )
+                HorizontalDivider()
+            }
+
+            // Defense bars
+            item {
+                AttributeCompareRow(
+                    label = "Defensa",
+                    cards = cards,
+                    max = 10,
+                    getValue = { it.defense },
+                    winner = defenseWinner
+                )
+                HorizontalDivider()
+            }
+
+            // Rarity bars
+            item {
+                AttributeCompareRow(
+                    label = "Rareza",
+                    cards = cards,
+                    max = 5,
+                    getValue = { it.rarity },
+                    winner = rarityWinner
+                )
+                HorizontalDivider()
+            }
+
+            // Location
+            item {
+                CompareRow(label = "Origen") {
                     cards.forEach { card ->
-                        CompareCell(value = card.title)
+                        val loc = if (card.latitude != null && card.longitude != null)
+                            "${"%.4f".format(card.latitude)},\n${"%.4f".format(card.longitude)}"
+                        else "Sin ubicación"
+                        CompareCell(value = loc)
                     }
                 }
                 HorizontalDivider()
             }
 
-            // Description
-            item {
-                CompareRow(label = "Descripcion") {
-                    cards.forEach { card ->
-                        CompareCell(value = card.description)
-                    }
-                }
-                HorizontalDivider()
-            }
-
-            // Created at
-            item {
-                CompareRow(label = "Creada") {
-                    cards.forEach { card ->
-                        CompareCell(value = dateFormat.format(Date(card.createdAt)))
-                    }
-                }
-                HorizontalDivider()
-            }
-
-            // ID
-            item {
-                CompareRow(label = "ID") {
-                    cards.forEach { card ->
-                        CompareCell(value = card.id.toString())
-                    }
-                }
-                HorizontalDivider()
-            }
-
-            // Description length
-            item {
-                CompareRow(label = "Largo desc.") {
-                    val maxLen = cards.maxOfOrNull { it.description.length } ?: 0
-                    cards.forEach { card ->
-                        val len = card.description.length
-                        val isBest = len == maxLen && maxLen > 0
-                        CompareCell(
-                            value = "$len chars",
-                            highlight = isBest
+            // Overall winner
+            if (overallWinner != null) {
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
                         )
-                    }
-                }
-                HorizontalDivider()
-            }
-
-            // Has image
-            item {
-                CompareRow(label = "Imagen") {
-                    cards.forEach { card ->
-                        val hasImage = card.imageUrl.isNotBlank()
-                        CompareCell(
-                            value = if (hasImage) "Si" else "No",
-                            highlight = hasImage
-                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                Icons.Default.EmojiEvents,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Ganador: ${overallWinner.key.title} (${overallWinner.value}/3)",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
                     }
                 }
             }
 
             item { Spacer(modifier = Modifier.height(80.dp)) }
+        }
+    }
+}
+
+@Composable
+private fun AttributeCompareRow(
+    label: String,
+    cards: List<CardEntity>,
+    max: Int,
+    getValue: (CardEntity) -> Int,
+    winner: CardEntity?
+) {
+    CompareRow(label = label) {
+        cards.forEach { card ->
+            val value = getValue(card)
+            val isWinner = card.id == winner?.id
+            Column(
+                modifier = Modifier.width(120.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "$value / $max",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = if (isWinner) FontWeight.Bold else FontWeight.Normal,
+                    color = if (isWinner) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                LinearProgressIndicator(
+                    progress = { value.toFloat() / max },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp),
+                    color = if (isWinner) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.surfaceVariant,
+                    trackColor = MaterialTheme.colorScheme.outlineVariant
+                )
+            }
         }
     }
 }

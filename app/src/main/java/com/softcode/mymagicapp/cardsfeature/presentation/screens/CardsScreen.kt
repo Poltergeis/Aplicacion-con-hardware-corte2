@@ -17,9 +17,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Camera
@@ -29,6 +32,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
@@ -42,6 +46,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -77,14 +82,20 @@ fun CardsScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    // Request both camera and location so GPS is available when creating a card
+    val multiplePermissionsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val cameraGranted = permissions[Manifest.permission.CAMERA] == true
+        if (cameraGranted) viewModel.onTakePicture(context)
+        else viewModel.onCameraPermissionDenied()
+    }
+
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted) {
-            viewModel.onTakePicture(context)
-        } else {
-            viewModel.onCameraPermissionDenied()
-        }
+        if (granted) viewModel.onTakePicture(context)
+        else viewModel.onCameraPermissionDenied()
     }
 
     fun requestCameraOrLaunch() {
@@ -98,6 +109,21 @@ fun CardsScreen(
             else -> {
                 cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
             }
+        }
+    }
+
+    // Request location permission on first entry so GPS is ready when creating cards
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            multiplePermissionsLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
         }
     }
 
@@ -224,8 +250,14 @@ fun CardsScreen(
             title = if (state.showAddDialog) "Nueva Carta" else "Editar Carta",
             cardTitle = state.dialogTitle,
             cardDescription = state.dialogDescription,
+            power = state.dialogPower,
+            defense = state.dialogDefense,
+            rarity = state.dialogRarity,
             onTitleChanged = viewModel::onDialogTitleChanged,
             onDescriptionChanged = viewModel::onDialogDescriptionChanged,
+            onPowerChanged = viewModel::onDialogPowerChanged,
+            onDefenseChanged = viewModel::onDialogDefenseChanged,
+            onRarityChanged = viewModel::onDialogRarityChanged,
             onConfirm = if (state.showAddDialog) {
                 { viewModel.onConfirmAdd(context) }
             } else {
@@ -321,6 +353,15 @@ private fun CardItem(
             }
 
             Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                CardStat(label = "POW", value = card.power, max = 10)
+                CardStat(label = "DEF", value = card.defense, max = 10)
+                CardStat(label = "RAR", value = card.rarity, max = 5)
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = dateFormat.format(Date(card.createdAt)),
                 style = MaterialTheme.typography.labelSmall,
@@ -331,12 +372,36 @@ private fun CardItem(
 }
 
 @Composable
+private fun CardStat(label: String, value: Int, max: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = "$label:",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = if (label == "RAR") "★".repeat(value) + "☆".repeat(max - value)
+                   else "$value/$max",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
+@Composable
 private fun CardDialog(
     title: String,
     cardTitle: String,
     cardDescription: String,
+    power: Int,
+    defense: Int,
+    rarity: Int,
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
+    onPowerChanged: (Int) -> Unit,
+    onDefenseChanged: (Int) -> Unit,
+    onRarityChanged: (Int) -> Unit,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     showCameraOption: Boolean = false,
@@ -347,48 +412,65 @@ private fun CardDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
-            Column {
-                OutlinedTextField(
-                    value = cardTitle,
-                    onValueChange = onTitleChanged,
-                    label = { Text("Título") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(
-                    value = cardDescription,
-                    onValueChange = onDescriptionChanged,
-                    label = { Text("Descripción") },
-                    minLines = 3,
-                    maxLines = 5,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                if (showCameraOption) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    if (pendingImageUri != null) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(pendingImageUri)
-                                .build(),
-                            contentDescription = "Foto seleccionada",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(160.dp)
-                                .clip(MaterialTheme.shapes.medium)
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                        OutlinedTextField(
+                            value = cardTitle,
+                            onValueChange = onTitleChanged,
+                            label = { Text("Título") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                    OutlinedButton(
-                        onClick = onTakePicture,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Default.Camera, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(if (pendingImageUri != null) "Retomar foto" else "Tomar foto")
-                    }
-                }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        OutlinedTextField(
+                            value = cardDescription,
+                            onValueChange = onDescriptionChanged,
+                            label = { Text("Descripción") },
+                            minLines = 3,
+                            maxLines = 5,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        AttributeSlider(
+                            label = "Poder",
+                            value = power,
+                            max = 10,
+                            onValueChange = onPowerChanged
+                        )
+                        AttributeSlider(
+                            label = "Defensa",
+                            value = defense,
+                            max = 10,
+                            onValueChange = onDefenseChanged
+                        )
+                        RaritySelector(
+                            value = rarity,
+                            onValueChange = onRarityChanged
+                        )
+                        if (showCameraOption) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            if (pendingImageUri != null) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(pendingImageUri)
+                                        .build(),
+                                    contentDescription = "Foto seleccionada",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(160.dp)
+                                        .clip(MaterialTheme.shapes.medium)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                            OutlinedButton(
+                                onClick = onTakePicture,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(Icons.Default.Camera, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(if (pendingImageUri != null) "Retomar foto" else "Tomar foto")
+                            }
+                        }
             }
         },
         confirmButton = {
@@ -398,4 +480,57 @@ private fun CardDialog(
             TextButton(onClick = onDismiss) { Text("Cancelar") }
         }
     )
+}
+
+@Composable
+private fun AttributeSlider(
+    label: String,
+    value: Int,
+    max: Int,
+    onValueChange: (Int) -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = label, style = MaterialTheme.typography.labelMedium)
+            Text(
+                text = "$value / $max",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        Slider(
+            value = value.toFloat(),
+            onValueChange = { onValueChange(it.toInt()) },
+            valueRange = 1f..max.toFloat(),
+            steps = max - 2,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
+private fun RaritySelector(value: Int, onValueChange: (Int) -> Unit) {
+    Column {
+        Text(text = "Rareza", style = MaterialTheme.typography.labelMedium)
+        Spacer(modifier = Modifier.height(4.dp))
+        Row {
+            (1..5).forEach { star ->
+                IconButton(
+                    onClick = { onValueChange(star) },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = if (star <= value) Icons.Default.Star else Icons.Default.StarBorder,
+                        contentDescription = "$star estrellas",
+                        tint = if (star <= value) Color(0xFFFFD700)
+                               else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
+    }
 }

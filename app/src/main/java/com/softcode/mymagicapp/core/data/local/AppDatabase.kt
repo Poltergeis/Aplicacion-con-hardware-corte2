@@ -11,7 +11,7 @@ import com.softcode.mymagicapp.core.data.local.entity.UserEntity
 
 @Database(
     entities = [UserEntity::class, CardEntity::class, ExchangeEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

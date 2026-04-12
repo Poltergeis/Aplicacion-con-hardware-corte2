@@ -12,7 +12,12 @@ fun CardModel.toRoomEntity() = RoomCardEntity(
     title = title,
     description = description,
     createdAt = createdAt,
-    imageUrl = imageUrl
+    imageUrl = imageUrl,
+    power = power,
+    defense = defense,
+    rarity = rarity,
+    latitude = latitude,
+    longitude = longitude
 )
 
 // ── Room → Domain ────────────────────────────────────────────────────────────
@@ -22,7 +27,12 @@ fun RoomCardEntity.toDomain() = DomainCardEntity(
     title = title,
     description = description,
     createdAt = createdAt,
-    imageUrl = imageUrl
+    imageUrl = imageUrl,
+    power = power,
+    defense = defense,
+    rarity = rarity,
+    latitude = latitude,
+    longitude = longitude
 )
 
 // ── Domain → Room ────────────────────────────────────────────────────────────
@@ -32,7 +42,12 @@ fun DomainCardEntity.toRoomEntity() = RoomCardEntity(
     title = title,
     description = description,
     createdAt = createdAt,
-    imageUrl = imageUrl
+    imageUrl = imageUrl,
+    power = power,
+    defense = defense,
+    rarity = rarity,
+    latitude = latitude,
+    longitude = longitude
 )
 
 // ── Domain → Network ─────────────────────────────────────────────────────────
@@ -42,7 +57,12 @@ fun DomainCardEntity.toModel() = CardModel(
     title = title,
     description = description,
     createdAt = createdAt,
-    imageUrl = imageUrl
+    imageUrl = imageUrl,
+    power = power,
+    defense = defense,
+    rarity = rarity,
+    latitude = latitude,
+    longitude = longitude
 )
 
 // ══ Exchange Mappers ═════════════════════════════════════════════════════════

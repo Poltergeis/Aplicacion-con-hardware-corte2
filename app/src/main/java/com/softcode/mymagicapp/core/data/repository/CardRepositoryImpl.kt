@@ -52,14 +52,24 @@ class CardRepositoryImpl @Inject constructor(
         userId: Long,
         title: String,
         description: String,
-        imageUrl: String
+        imageUrl: String,
+        power: Int,
+        defense: Int,
+        rarity: Int,
+        latitude: Double?,
+        longitude: Double?
     ): OperationResult<Unit, String, String> {
         val newCard = CardModel(
             userId = userId,
             title = title,
             description = description,
             createdAt = System.currentTimeMillis(),
-            imageUrl = imageUrl
+            imageUrl = imageUrl,
+            power = power,
+            defense = defense,
+            rarity = rarity,
+            latitude = latitude,
+            longitude = longitude
         )
         return try {
             val response = api.postCard(newCard)

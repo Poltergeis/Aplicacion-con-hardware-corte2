@@ -6,4 +6,5 @@ plugins {
     alias(libs.plugins.secrets.gradle) apply false
     alias(libs.plugins.hilt.android) apply false
     alias(libs.plugins.devtools.ksp) apply false
+    id("com.google.gms.google-services") version "4.4.2" apply false
 }

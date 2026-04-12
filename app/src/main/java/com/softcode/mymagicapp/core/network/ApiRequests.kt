@@ -31,3 +31,8 @@ data class RespondExchangeRequest(
     val exchangeId: Long,
     val status: String
 )
+
+@Serializable
+data class UpdateFcmTokenRequest(
+    val token: String
+)

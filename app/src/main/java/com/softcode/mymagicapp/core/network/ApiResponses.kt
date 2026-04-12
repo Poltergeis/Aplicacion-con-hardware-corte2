@@ -22,7 +22,18 @@ data class CardModel(
     val title: String,
     val description: String,
     val createdAt: Long = System.currentTimeMillis(),
-    val imageUrl: String
+    val imageUrl: String,
+    val power: Int = 1,
+    val defense: Int = 1,
+    val rarity: Int = 1,
+    val latitude: Double? = null,
+    val longitude: Double? = null
+)
+
+@Serializable
+data class UserModel(
+    val id: Long,
+    val username: String
 )
 
 @Serializable
