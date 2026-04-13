@@ -70,17 +70,17 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.converter.gson)
 
-    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
-    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation(libs.glide)
+    implementation(libs.play.services.location)
 
     // WorkManager + Hilt integration
-    implementation("androidx.work:work-runtime-ktx:2.10.1")
-    implementation("androidx.hilt:hilt-work:1.2.0")
-    ksp("androidx.hilt:hilt-compiler:1.2.0")
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
 
     // Firebase (FCM)
-    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
-    implementation("com.google.firebase:firebase-messaging-ktx")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging.ktx)
 
     // Room
     implementation(libs.androidx.room.runtime)
