@@ -1,7 +1,7 @@
 package com.softcode.mymagicapp.exchangefeature.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.softcode.mymagicapp.cardsfeature.domain.usecases.GetCardsUseCase
+import com.softcode.mymagicapp.core.domain.usecases.GetCardsUseCase
 import com.softcode.mymagicapp.core.domain.entities.CardEntity
 import com.softcode.mymagicapp.core.domain.entities.UserEntity
 import com.softcode.mymagicapp.core.domain.repository.AuthRepository

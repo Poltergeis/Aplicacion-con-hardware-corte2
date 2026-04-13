@@ -4,7 +4,7 @@ import com.softcode.mymagicapp.cardsfeature.data.ImageUploaderImpl
 import com.softcode.mymagicapp.cardsfeature.domain.ImageUploader
 import com.softcode.mymagicapp.cardsfeature.domain.usecases.AddCardUseCase
 import com.softcode.mymagicapp.cardsfeature.domain.usecases.DeleteCardUseCase
-import com.softcode.mymagicapp.cardsfeature.domain.usecases.GetCardsUseCase
+import com.softcode.mymagicapp.core.domain.usecases.GetCardsUseCase
 import com.softcode.mymagicapp.cardsfeature.domain.usecases.LogoutUseCase
 import com.softcode.mymagicapp.cardsfeature.domain.usecases.UpdateCardUseCase
 import com.softcode.mymagicapp.core.domain.repository.AuthRepository

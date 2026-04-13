@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.softcode.mymagicapp.cardsfeature.domain.usecases.GetCardsUseCase
+import com.softcode.mymagicapp.core.domain.usecases.GetCardsUseCase
 import com.softcode.mymagicapp.core.data.session.SessionManager
 import com.softcode.mymagicapp.core.domain.results.OperationResult
 import com.softcode.mymagicapp.exchangefeature.domain.usecases.GetExchangesUseCase

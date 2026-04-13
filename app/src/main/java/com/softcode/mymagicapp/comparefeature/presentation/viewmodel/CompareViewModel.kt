@@ -1,7 +1,7 @@
 package com.softcode.mymagicapp.comparefeature.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.softcode.mymagicapp.cardsfeature.domain.usecases.GetCardsUseCase
+import com.softcode.mymagicapp.core.domain.usecases.GetCardsUseCase
 import com.softcode.mymagicapp.comparefeature.presentation.ui.CompareEffect
 import com.softcode.mymagicapp.comparefeature.presentation.ui.CompareUIState
 import com.softcode.mymagicapp.core.domain.entities.CardEntity
