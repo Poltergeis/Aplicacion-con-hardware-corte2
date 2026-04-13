@@ -4,6 +4,7 @@ import com.softcode.mymagicapp.core.domain.entities.CardEntity
 import com.softcode.mymagicapp.core.domain.repository.AuthRepository
 import com.softcode.mymagicapp.core.domain.repository.CardRepository
 import com.softcode.mymagicapp.core.domain.results.OperationResult
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
@@ -13,6 +14,7 @@ class GetCardsUseCase(
     private val authRepository: AuthRepository
 ) {
     /** Reactive stream from Room — emits immediately then on every local change. */
+    @OptIn(ExperimentalCoroutinesApi::class)
     val cards: Flow<List<CardEntity>> = authRepository.user
         .filterNotNull()
         .flatMapLatest { user -> cardRepository.getCardsFlow(user.id) }

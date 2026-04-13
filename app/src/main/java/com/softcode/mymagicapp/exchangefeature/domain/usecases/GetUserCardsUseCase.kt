@@ -4,6 +4,7 @@ import com.softcode.mymagicapp.core.domain.entities.CardEntity
 import com.softcode.mymagicapp.core.domain.results.OperationResult
 import com.softcode.mymagicapp.core.network.CardsApi
 import com.softcode.mymagicapp.core.network.toDomain
+import com.softcode.mymagicapp.core.network.toRoomEntity
 import javax.inject.Inject
 
 class GetUserCardsUseCase @Inject constructor(

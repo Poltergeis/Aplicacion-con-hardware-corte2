@@ -1,28 +1,9 @@
 package com.softcode.mymagicapp.core.data.local.entity
 
 import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(
-    tableName = "exchanges",
-    foreignKeys = [
-        ForeignKey(
-            entity = UserEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["proposerId"],
-            onDelete = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = UserEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["receiverId"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ],
-    indices = [Index(value = ["proposerId"]), Index(value = ["receiverId"])]
-)
+@Entity(tableName = "exchanges")
 data class ExchangeEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val proposerId: Long,

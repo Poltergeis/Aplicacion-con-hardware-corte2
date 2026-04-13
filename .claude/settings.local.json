@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs wc:*)",
+      "Bash(ls -la app/src/main/java/com/softcode/mymagicapp/*/presentation/screens/)",
+      "Bash(grep -r \"import.*firebase\" /c/Users/Administrator/Documents/GitHub/Aplicacion-con-hardware-corte2/app/src/main/java/*.kt)",
+      "Bash(grep -i \"\\\\.kt$\")",
+      "Bash(awk -F: '{print $1}')",
+      "Bash(xargs cat:*)",
+      "Bash(xargs grep:*)"
+    ]
+  }
+}

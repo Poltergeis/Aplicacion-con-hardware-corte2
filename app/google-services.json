@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "900349430086",
+    "project_id": "proyecto-cartas-corte-3",
+    "storage_bucket": "proyecto-cartas-corte-3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900349430086:android:e63c9bda31b185420efd47",
+        "android_client_info": {
+          "package_name": "com.softcode.mymagicapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1cX_ZN79IfY8TmsdT9JhXsivlFJsoEX8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
