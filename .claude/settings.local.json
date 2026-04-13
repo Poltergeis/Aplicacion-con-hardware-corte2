@@ -7,7 +7,8 @@
       "Bash(grep -i \"\\\\.kt$\")",
       "Bash(awk -F: '{print $1}')",
       "Bash(xargs cat:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(./gradlew compileDebugKotlin)"
     ]
   }
 }

@@ -53,7 +53,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.softcode.mymagicapp.core.domain.entities.CardEntity
 import com.softcode.mymagicapp.core.domain.entities.ExchangeEntity
-import com.softcode.mymagicapp.core.network.UserModel
+import com.softcode.mymagicapp.core.domain.entities.UserEntity
 import com.softcode.mymagicapp.exchangefeature.presentation.ui.ExchangeEffect
 import com.softcode.mymagicapp.exchangefeature.presentation.ui.ExchangeFilterTab
 import com.softcode.mymagicapp.exchangefeature.presentation.ui.ExchangeStep
@@ -176,7 +176,7 @@ fun ExchangeScreen(
 private fun CreateExchangeDialog(
     state: ExchangeUIState,
     onUserSearchChanged: (String) -> Unit,
-    onUserSelected: (UserModel) -> Unit,
+    onUserSelected: (UserEntity) -> Unit,
     onMyCardSearchChanged: (String) -> Unit,
     onMyCardSelected: (CardEntity) -> Unit,
     onReceiverCardSelected: (CardEntity) -> Unit,
@@ -250,7 +250,7 @@ private fun CreateExchangeDialog(
 private fun StepSelectUser(
     state: ExchangeUIState,
     onSearchChanged: (String) -> Unit,
-    onUserSelected: (UserModel) -> Unit
+    onUserSelected: (UserEntity) -> Unit
 ) {
     Column {
         OutlinedTextField(

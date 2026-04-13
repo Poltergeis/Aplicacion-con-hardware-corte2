@@ -259,7 +259,7 @@ fun CardsScreen(
             onDefenseChanged = viewModel::onDialogDefenseChanged,
             onRarityChanged = viewModel::onDialogRarityChanged,
             onConfirm = if (state.showAddDialog) {
-                { viewModel.onConfirmAdd(context) }
+                { viewModel.onConfirmAdd() }
             } else {
                 viewModel::onConfirmEdit
             },

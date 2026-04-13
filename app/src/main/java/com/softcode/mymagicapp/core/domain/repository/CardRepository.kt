@@ -24,4 +24,5 @@ interface CardRepository {
     ): OperationResult<Unit, String, String>
     suspend fun updateCard(card: CardEntity): OperationResult<Unit, String, String>
     suspend fun deleteCard(card: CardEntity): OperationResult<Unit, String, String>
+    suspend fun getCardsByUser(userId: Long): OperationResult<List<CardEntity>, String, String>
 }

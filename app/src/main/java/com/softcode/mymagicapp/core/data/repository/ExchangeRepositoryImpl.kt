@@ -2,6 +2,7 @@ package com.softcode.mymagicapp.core.data.repository
 
 import com.softcode.mymagicapp.core.data.local.dao.ExchangeDao
 import com.softcode.mymagicapp.core.domain.entities.ExchangeEntity
+import com.softcode.mymagicapp.core.domain.entities.UserEntity
 import com.softcode.mymagicapp.core.domain.repository.ExchangeRepository
 import com.softcode.mymagicapp.core.domain.results.OperationResult
 import com.softcode.mymagicapp.core.network.CardsApi
@@ -91,6 +92,25 @@ class ExchangeRepositoryImpl @Inject constructor(
             val response = api.respondExchange(request)
             when {
                 response.isSuccessful -> OperationResult.Success(Unit)
+                response.code() in 400..499 ->
+                    OperationResult.Failure(response.errorBody()?.string() ?: "Error de negocio")
+                else ->
+                    OperationResult.Error("Error del servidor: ${response.code()}")
+            }
+        } catch (e: Exception) {
+            OperationResult.Error(e.message ?: "Error desconocido")
+        }
+    }
+
+    override suspend fun getUsers(search: String): OperationResult<List<UserEntity>, String, String> {
+        return try {
+            val response = api.getUsers(search)
+            when {
+                response.isSuccessful -> {
+                    val body = response.body()
+                    if (body != null) OperationResult.Success(body.map { it.toDomain() })
+                    else OperationResult.Failure("Respuesta vacía")
+                }
                 response.code() in 400..499 ->
                     OperationResult.Failure(response.errorBody()?.string() ?: "Error de negocio")
                 else ->

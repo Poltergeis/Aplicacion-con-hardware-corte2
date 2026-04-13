@@ -190,7 +190,7 @@ class CardsViewModel @Inject constructor(
         }
     }
 
-    fun onConfirmAdd(context: Context) {
+    fun onConfirmAdd() {
         val state = _uiState.value
         val title = state.dialogTitle.trim()
         val description = state.dialogDescription.trim()
@@ -207,7 +207,7 @@ class CardsViewModel @Inject constructor(
         onDismissDialog()
 
         runAsync {
-            when (val result = addCardUseCase(title, description, imageUri, context, power, defense, rarity)) {
+            when (val result = addCardUseCase(title, description, imageUri, power, defense, rarity)) {
                 is OperationResult.Failure -> sendEffect(CardsEffect.ShowMessage(result.reason))
                 is OperationResult.Error -> sendEffect(CardsEffect.ShowMessage(result.error))
                 is OperationResult.Success -> Unit

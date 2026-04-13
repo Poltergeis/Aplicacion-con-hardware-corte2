@@ -4,6 +4,10 @@ import com.softcode.mymagicapp.core.data.local.entity.CardEntity as RoomCardEnti
 import com.softcode.mymagicapp.core.domain.entities.CardEntity as DomainCardEntity
 import com.softcode.mymagicapp.core.data.local.entity.ExchangeEntity as RoomExchangeEntity
 import com.softcode.mymagicapp.core.domain.entities.ExchangeEntity as DomainExchangeEntity
+import com.softcode.mymagicapp.core.domain.entities.UserEntity
+
+// ── Network → Domain (Users) ─────────────────────────────────────────────────
+fun UserModel.toDomain() = UserEntity(id = id, username = username, password = null)
 
 // ── Network → Room ──────────────────────────────────────────────────────────
 fun CardModel.toRoomEntity() = RoomCardEntity(

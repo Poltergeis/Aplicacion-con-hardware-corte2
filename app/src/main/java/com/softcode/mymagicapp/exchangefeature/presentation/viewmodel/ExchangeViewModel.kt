@@ -3,9 +3,9 @@ package com.softcode.mymagicapp.exchangefeature.presentation.viewmodel
 import androidx.lifecycle.viewModelScope
 import com.softcode.mymagicapp.cardsfeature.domain.usecases.GetCardsUseCase
 import com.softcode.mymagicapp.core.domain.entities.CardEntity
+import com.softcode.mymagicapp.core.domain.entities.UserEntity
 import com.softcode.mymagicapp.core.domain.repository.AuthRepository
 import com.softcode.mymagicapp.core.domain.results.OperationResult
-import com.softcode.mymagicapp.core.network.UserModel
 import com.softcode.mymagicapp.core.ui.base.viewmodel.BaseViewModel
 import com.softcode.mymagicapp.core.ui.base.viewmodel.runAsync
 import com.softcode.mymagicapp.exchangefeature.domain.usecases.CreateExchangeUseCase
@@ -138,7 +138,7 @@ class ExchangeViewModel @Inject constructor(
         setState { it.copy(userSearchQuery = query) }
     }
 
-    fun onUserSelected(user: UserModel) {
+    fun onUserSelected(user: UserEntity) {
         if (user.id == _uiState.value.currentUserId) {
             sendEffect(ExchangeEffect.ShowMessage("No puedes intercambiar contigo mismo"))
             return

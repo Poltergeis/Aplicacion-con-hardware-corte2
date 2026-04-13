@@ -2,7 +2,7 @@ package com.softcode.mymagicapp.exchangefeature.presentation.ui
 
 import com.softcode.mymagicapp.core.domain.entities.CardEntity
 import com.softcode.mymagicapp.core.domain.entities.ExchangeEntity
-import com.softcode.mymagicapp.core.network.UserModel
+import com.softcode.mymagicapp.core.domain.entities.UserEntity
 
 enum class ExchangeStep { SELECT_USER, SELECT_MY_CARD, SELECT_RECEIVER_CARD }
 
@@ -18,9 +18,9 @@ data class ExchangeUIState(
     val createStep: ExchangeStep = ExchangeStep.SELECT_USER,
     // Step 1 – user selection
     val userSearchQuery: String = "",
-    val availableUsers: List<UserModel> = emptyList(),
+    val availableUsers: List<UserEntity> = emptyList(),
     val isLoadingUsers: Boolean = false,
-    val selectedUser: UserModel? = null,
+    val selectedUser: UserEntity? = null,
     // Step 2 – my card selection
     val myCardSearchQuery: String = "",
     val selectedMyCard: CardEntity? = null,
@@ -37,7 +37,7 @@ data class ExchangeUIState(
             ExchangeFilterTab.PENDING -> exchanges.filter { it.status == ExchangeEntity.STATUS_PENDING }
         }
 
-    val filteredUsers: List<UserModel>
+    val filteredUsers: List<UserEntity>
         get() = if (userSearchQuery.isBlank()) availableUsers
                 else availableUsers.filter { it.username.contains(userSearchQuery, ignoreCase = true) }
 

@@ -1,8 +1,7 @@
 package com.softcode.mymagicapp.cardsfeature.domain.usecases
 
-import android.content.Context
 import android.net.Uri
-import com.softcode.mymagicapp.cardsfeature.data.UploadCardImageUseCase
+import com.softcode.mymagicapp.cardsfeature.domain.ImageUploader
 import com.softcode.mymagicapp.core.domain.repository.AuthRepository
 import com.softcode.mymagicapp.core.domain.repository.CardRepository
 import com.softcode.mymagicapp.core.domain.results.OperationResult
@@ -11,14 +10,13 @@ import com.softcode.mymagicapp.core.hardware.domain.LocationProvider
 class AddCardUseCase(
     private val cardRepository: CardRepository,
     private val authRepository: AuthRepository,
-    private val uploadCardImageUseCase: UploadCardImageUseCase,
+    private val imageUploader: ImageUploader,
     private val locationProvider: LocationProvider
 ) {
     suspend operator fun invoke(
         title: String,
         description: String,
         imageUri: Uri?,
-        context: Context,
         power: Int = 1,
         defense: Int = 1,
         rarity: Int = 1,
@@ -29,7 +27,7 @@ class AddCardUseCase(
             ?: return OperationResult.Failure("No hay sesión activa")
 
         val imageUrl = if (imageUri != null) {
-            when (val result = uploadCardImageUseCase(imageUri, context)) {
+            when (val result = imageUploader.upload(imageUri)) {
                 is OperationResult.Success -> result.data
                 is OperationResult.Failure -> return OperationResult.Failure(result.reason)
                 is OperationResult.Error -> return OperationResult.Error(result.error)

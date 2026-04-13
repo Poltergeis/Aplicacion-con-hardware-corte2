@@ -128,4 +128,23 @@ class CardRepositoryImpl @Inject constructor(
             OperationResult.Error(e.message ?: "Unknown error")
         }
     }
+
+    override suspend fun getCardsByUser(userId: Long): OperationResult<List<CardEntity>, String, String> {
+        return try {
+            val response = api.getCardsByUser(userId)
+            when {
+                response.isSuccessful -> {
+                    val body = response.body()
+                    if (body != null) OperationResult.Success(body.map { it.toRoomEntity().toDomain() })
+                    else OperationResult.Failure("Respuesta vacía")
+                }
+                response.code() in 400..499 ->
+                    OperationResult.Failure(response.errorBody()?.string() ?: "Error de negocio")
+                else ->
+                    OperationResult.Error("Error del servidor: ${response.code()}")
+            }
+        } catch (e: Exception) {
+            OperationResult.Error(e.message ?: "Error desconocido")
+        }
+    }
 }
