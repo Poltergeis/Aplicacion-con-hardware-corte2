@@ -24,4 +24,7 @@ interface ExchangeDao {
 
     @Query("DELETE FROM exchanges WHERE proposerId = :userId OR receiverId = :userId")
     suspend fun deleteExchangesByUserId(userId: Long)
+
+    @Query("SELECT * FROM exchanges WHERE receiverId = :userId AND status = 'PENDING' AND createdAt < :thresholdTimestamp")
+    suspend fun getPendingReceivedExchanges(userId: Long, thresholdTimestamp: Long): List<ExchangeEntity>
 }

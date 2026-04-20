@@ -11,6 +11,7 @@ import com.softcode.mymagicapp.core.domain.results.AuthResult
 import com.softcode.mymagicapp.core.network.CardsApi
 import com.softcode.mymagicapp.core.network.UpdateFcmTokenRequest
 import com.softcode.mymagicapp.core.ui.base.viewmodel.BaseViewModel
+import com.softcode.mymagicapp.core.workers.ReminderScheduler
 import com.softcode.mymagicapp.core.workers.SyncScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -31,6 +32,7 @@ class LoginViewModel @Inject constructor(
             val result = loadLoggedUserUseCase()
             if (result is AuthResult.Success) {
                 SyncScheduler.schedule(context)
+                ReminderScheduler.schedule(context)
                 sendEffect(LoginEffect.NavigateToCards)
             }
         }
@@ -59,6 +61,7 @@ class LoginViewModel @Inject constructor(
             when (val result = loginUseCase(state.name.trim(), state.password)) {
                 is AuthResult.Success -> {
                     SyncScheduler.schedule(context)
+                    ReminderScheduler.schedule(context)
                     registerFcmToken()
                     sendEffect(LoginEffect.NavigateToCards)
                 }

@@ -16,6 +16,7 @@ import com.softcode.mymagicapp.core.domain.results.OperationResult
 import com.softcode.mymagicapp.core.hardware.domain.CameraManager
 import com.softcode.mymagicapp.core.ui.base.viewmodel.BaseViewModel
 import com.softcode.mymagicapp.core.ui.base.viewmodel.runAsync
+import com.softcode.mymagicapp.core.workers.ReminderScheduler
 import com.softcode.mymagicapp.core.workers.SyncScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -146,6 +147,7 @@ class CardsViewModel @Inject constructor(
             when (logoutUseCase()) {
                 is AuthResult.Success -> {
                     SyncScheduler.cancel(context)
+                    ReminderScheduler.cancel(context)
                     sendEffect(CardsEffect.NavigateToLogin)
                 }
                 is AuthResult.Error -> sendEffect(CardsEffect.ShowMessage("Error al cerrar sesión"))
